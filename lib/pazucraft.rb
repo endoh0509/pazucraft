@@ -28,11 +28,28 @@ require "pazucraft/version"
 require 'rubygems'
 require 'rmagick'
 
+
 module Pazucraft
+  def generate(input_path, output_path)
+    equirectangular = Pazucraft::Equirectangular.new(input_path)
+    unit = equirectangular.unit
+    frame = Magick::Image.new(unit * 8, unit * 5) { self.background_color = 'none' }
+    for col in 0..7 do
+      for row in 0..4 do
+        piece = equirectangular.skewed_piece(col, row)
+        if piece
+          frame = frame.composite(piece, unit * col, unit * row, Magick::OverCompositeOp)
+        end
+      end
+    end
+    frame.write(output_path)
+  end
+  module_function :generate
+
   class Equirectangular
     attr_reader :unit
 
-    def initialize file_name
+    def initialize(file_name)
       @image = Magick::Image.read(file_name).first
       @unit = @image.columns / 8
 
@@ -47,51 +64,44 @@ module Pazucraft
     def area(col, row)
       x = @unit * col
       width = @unit
-
-      case (row)
-        when 0 then
-          y = 0
-        when 1 then
-          y = @unit * 1/2
-        when 2 then
-          y = @unit * 3/2
-        when 3 then
-          y = @unit * 5/2
-        when 4 then
-          y = @unit * 7/2
-        else
-          y = 0
+      case row
+      when 0
+        y = 0
+      when 1
+        y = @unit * 1/2
+      when 2
+        y = @unit * 3/2
+      when 3
+        y = @unit * 5/2
+      when 4
+        y = @unit * 7/2
+      else
+        y = 0
       end
 
-      case (row)
-        when 0, 4 then
-          height = @unit / 2
-        when 1, 2, 3 then
-          height = @unit
-        else
-          height = 0
+      case row
+      when 0, 4
+        height = @unit / 2
+      when 1, 2, 3
+        height = @unit
+      else
+        height = 0
       end
-
-      return [x, y, width, height]
+      [x, y, width, height]
     end
 
     def rectangular_piece(col, row)
       x, y, width, height = self.area(col, row)
-
       @image.crop(x, y, width, height)
     end
 
     def triangular_north_piece(col, row)
       img = self.rectangular_piece(col, row)
-
       frame = Magick::Image.new(@unit, @unit) {self.background_color = 'none'}
-
       frame.virtual_pixel_method = Magick::TransparentVirtualPixelMethod
-
       piece = frame.composite(img, 0, img.rows, Magick::OverCompositeOp)
-
       case col
-        when 0, 2, 4, 6 then
+        when 0, 2, 4, 6
           points = [@offset[0], @offset[2]]
           points += [@offset[2], @offset[2]]
           points += [@offset[4], @offset[2]]
@@ -100,7 +110,7 @@ module Pazucraft
           points += [@offset[1], @offset[4]]
           points += [@offset[4], @offset[4]]
           points += [@offset[3], @offset[4]]
-        when 1, 5 then
+        when 1, 5
           points = [@offset[0], @offset[2]]
           points += [@offset[2], @offset[2]]
           points += [@offset[4], @offset[2]]
@@ -109,7 +119,7 @@ module Pazucraft
           points += [@offset[3], @offset[4]]
           points += [@offset[4], @offset[4]]
           points += [@offset[4], @offset[3]-1]
-        when 3, 7 then
+        when 3, 7
           points = [@offset[0], @offset[2]]
           points += [@offset[2], @offset[2]]
           points += [@offset[4], @offset[2]]
@@ -123,34 +133,28 @@ module Pazucraft
       end
 
       distorted = piece.distort(Magick::BilinearDistortion, points)
-
       case col
-        when 0, 1, 7 then
+        when 0, 1, 7
           rotated = distorted
-        when 2 then
+        when 2
           rotated = distorted.rotate(-90)
-        when 3, 4, 5 then
+        when 3, 4, 5
           rotated = distorted.rotate(180)
-        when 6 then
+        when 6
           rotated = distorted.rotate(90)
         else
           rotated = nil
       end
-
-      return rotated
+      rotated
     end
 
     def triangular_south_piece(col, row)
       img = self.rectangular_piece(col, row)
-
       frame = Magick::Image.new(@unit, @unit) {self.background_color = 'none'}
-
       frame.virtual_pixel_method = Magick::TransparentVirtualPixelMethod
-
       piece = frame.composite(img, 0, 0, Magick::OverCompositeOp)
-
       case col
-        when 0, 2, 4, 6 then
+        when 0, 2, 4, 6
           points = [@offset[0], @offset[0]]
           points += [@offset[1], @offset[0]]
           points += [@offset[4], @offset[0]]
@@ -159,7 +163,7 @@ module Pazucraft
           points += [@offset[2], @offset[2]]
           points += [@offset[4], @offset[2]]
           points += [@offset[2], @offset[2]]
-        when 1, 5 then
+        when 1, 5
           points = [@offset[0], @offset[0]]
           points += [@offset[3], @offset[0]]
           points += [@offset[4], @offset[0]]
@@ -168,7 +172,7 @@ module Pazucraft
           points += [@offset[2], @offset[2]]
           points += [@offset[4], @offset[2]]
           points += [@offset[2], @offset[2]]
-        when 3, 7 then
+        when 3, 7
           points = [@offset[0], @offset[0]]
           points += [@offset[0], @offset[1]+1]
           points += [@offset[4], @offset[0]]
@@ -182,117 +186,86 @@ module Pazucraft
       end
 
       distorted = piece.distort(Magick::BilinearDistortion, points)
-
       case col
-        when 0, 1, 7 then
+        when 0, 1, 7
           rotated = distorted
         when 2 then
           rotated = distorted.rotate(90)
-        when 3, 4, 5 then
+        when 3, 4, 5
           rotated = distorted.rotate(180)
-        when 6 then
+        when 6
           rotated = distorted.rotate(-90)
         else
           rotated = nil
       end
-
-      return rotated
+      rotated
     end
 
     def triangular_piece(col, row)
       case row
-        when 0 then
-          return self.triangular_north_piece(col, row)
-        when 4 then
-          return self.triangular_south_piece(col, row)
-        else
-          return nil
+      when 0
+        self.triangular_north_piece(col, row)
+      when 4
+        self.triangular_south_piece(col, row)
+      else
+        nil
       end
     end
 
     def trapezoid_piece(col, row)
-      case (row)
-        when 1 then
-          points = [@offset[0], @offset[0]]
-          points += [@offset[1], @offset[0]]
-          points += [@offset[4], @offset[0]]
-          points += [@offset[3], @offset[0]]
-          points += [@offset[0], @offset[4]]
-          points += [@offset[0], @offset[4]]
-          points += [@offset[4], @offset[4]]
-          points += [@offset[4], @offset[4]]
-        when 3 then
-          points = [@offset[0], @offset[0]]
-          points += [@offset[0], @offset[0]]
-          points += [@offset[4], @offset[0]]
-          points += [@offset[4], @offset[0]]
-          points += [@offset[0], @offset[4]]
-          points += [@offset[1], @offset[4]]
-          points += [@offset[4], @offset[4]]
-          points += [@offset[3], @offset[4]]
-        else
-          return nil
+      case row
+      when 1
+        points = [@offset[0], @offset[0]]
+        points += [@offset[1], @offset[0]]
+        points += [@offset[4], @offset[0]]
+        points += [@offset[3], @offset[0]]
+        points += [@offset[0], @offset[4]]
+        points += [@offset[0], @offset[4]]
+        points += [@offset[4], @offset[4]]
+        points += [@offset[4], @offset[4]]
+      when 3
+        points = [@offset[0], @offset[0]]
+        points += [@offset[0], @offset[0]]
+        points += [@offset[4], @offset[0]]
+        points += [@offset[4], @offset[0]]
+        points += [@offset[0], @offset[4]]
+        points += [@offset[1], @offset[4]]
+        points += [@offset[4], @offset[4]]
+        points += [@offset[3], @offset[4]]
+      else
+        return nil
       end
 
       piece = self.rectangular_piece(col, row)
-
       piece.virtual_pixel_method = Magick::TransparentVirtualPixelMethod
-
       piece.distort(Magick::BilinearDistortion, points)
     end
 
     def skewed_piece(col, row)
-      case (row)
-        when 0, 4 then
-          if col == 0 then
-            piece = self.pole(row)
-          else
-            piece = nil
-          end
-        when 1, 3 then
-          piece = self.trapezoid_piece(col, row)
-        when 2 then
-          piece = self.rectangular_piece(col, row)
+      case row
+      when 0, 4
+        if col == 0
+          piece = self.pole(row)
         else
           piece = nil
+        end
+      when 1, 3
+        piece = self.trapezoid_piece(col, row)
+      when 2
+        piece = self.rectangular_piece(col, row)
+      else
+        piece = nil
       end
-
-      return piece
+      piece
     end
 
     def pole(row)
-      frame = Magick::Image.new(@unit, @unit) {self.background_color = 'none'}
-
+      frame = Magick::Image.new(@unit, @unit) { self.background_color = 'none' }
       for num in 0..7 do
         img = self.triangular_piece(num, row)
         frame = frame.composite(img, 0, 0, Magick::OverCompositeOp)
       end
-
-      return frame
+      frame
     end
   end
 end
-
-# begin
-# 	if ARGV.length != 1 then
-# 		puts "usage: #{me} [image file]"
-# 		exit 0
-# 	end
-#
-# 	equirectangular = Equirectangular.new(ARGV[0])
-# 	unit = equirectangular.unit
-#
-# 	frame = Magick::Image.new(unit*8, unit*5){self.background_color = 'none'}
-#
-# 	for col in 0..7 do
-# 		for row in 0..4 do
-# 			piece = equirectangular.skewed_piece(col, row)
-# 			if piece then
-# 				frame = frame.composite(piece, unit*col, unit*row, Magick::OverCompositeOp)
-# 			end
-# 		end
-# 	end
-#
-# 	basename = File::basename(ARGV[0], '.*')
-# 	frame.write(basename + "_dep.png")
-# end

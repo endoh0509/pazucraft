@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require 'pazucraft'
+
+output_file = ''
+
+if ARGV.length == 1
+  basename = File::basename(ARGV[0], '.*')
+  dir = File::dirname(ARGV[0])
+  output_file = dir + basename
+  p output_file
+  exit
+elsif ARGV.length == 2
+  output_file = ARGV[1]
+else
+  puts "usage: #{me} [image file]"
+  exit
+end
+
+input_file = ARGV[0]
+
+Pazucraft::generate(input_file, output_file)

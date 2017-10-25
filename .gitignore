@@ -8,6 +8,9 @@
 /spec/reports/
 /tmp/
 /vendor/
+*.gem
 
 # rspec failure tracking
 .rspec_status
+
+spec/img/*
