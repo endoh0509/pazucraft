@@ -8,7 +8,7 @@ You can convert to the development view for making the paper craft from the sphe
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'pazucraft'
+gem 'pazucraft', github: 'endoh0509/pazucraft'
 ```
 
 ```ruby
