@@ -11,6 +11,13 @@ Add this line to your application's Gemfile:
 gem 'pazucraft'
 ```
 
+```ruby
+require 'pazucraft'
+input_file = 'img/in.jpg'
+output_file = 'img/out.png'
+Pazucraft::generate(input_file, output_file)
+```
+
 And then execute:
 
     $ bundle
