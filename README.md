@@ -1,4 +1,4 @@
-pazucraft
+pazucraft gem
 ====
 
 You can convert to the development view for making the paper craft from the spherical image snapped with the RICOH THETA.
@@ -8,14 +8,10 @@ You can convert to the development view for making the paper craft from the sphe
 - ImageMagick
 - rmagick
 
-## Usage
-
-    $ ruby pazucraft.rb [infile.jpg]
-
 ## Licence
 
-[MIT](https://github.com/chihayafuru/pazucraft/blob/master/LICENSE)
+[MIT](https://github.com/endoh0509/pazucraft/blob/master/LICENSE)
 
 ## Author
 
-[Takehiko YOSHIDA](https://github.com/chihayafuru)
+[Katsuya Endoh](https://github.com/endoh0509)
