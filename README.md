@@ -25,6 +25,11 @@ Or install it yourself as:
 require 'pazucraft'
 input_file = 'img/in.jpg'
 output_file = 'img/out.png'
+img = Pazucraft::generate(input_file)
+img.write(output_file)
+
+# or
+
 Pazucraft::generate(input_file, output_file)
 ```
 
