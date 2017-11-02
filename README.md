@@ -30,7 +30,7 @@ img.write(output_file)
 
 # or
 
-Pazucraft::generate(input_file, output_file)
+Pazucraft::generate_file(input_file, output_file)
 ```
 
 ## Requirement
