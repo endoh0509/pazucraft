@@ -14,3 +14,4 @@
 .rspec_status
 
 spec/img/*
+.DS_Store

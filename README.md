@@ -1,5 +1,8 @@
 # Pazucraft
 
+![out](in.jpg)
+![out](out.png)
+
 This is [pazcraft](https://github.com/chihayafuru/pazucraft) gem.  
 You can convert to the development view for making the paper craft from the spherical image snapped with the RICOH THETA.
 
@@ -47,4 +50,3 @@ gem build pazucraft.gemspec
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
